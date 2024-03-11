@@ -14,6 +14,8 @@ struct ContentView: View {
     
     @State private var showingScore = false
     @State private var scoreTitle = ""
+    @State private var score = 0
+    @State private var gameRestart = false
     
     var body: some View {
         ZStack {
@@ -38,7 +40,14 @@ struct ContentView: View {
                     }
                     ForEach(0..<3) { number in
                         Button {
-                            flagTapped(number)
+                            if score < 9 {
+                                flagTapped(number)
+                            }
+                            
+                            if score == 8 {
+                                gameRestart = true
+                                showingScore = false
+                            }
                         } label: {
                             Image(countries[number])
                                 .cornerRadius(20)
@@ -55,7 +64,7 @@ struct ContentView: View {
                 VStack {
                     Spacer()
                     Spacer()
-                    Text("Score: ???")
+                    Text("Score: \(score)")
                         .foregroundStyle(.white)
                         .font(.title.bold())
                     Spacer()
@@ -66,15 +75,23 @@ struct ContentView: View {
         .alert(scoreTitle, isPresented: $showingScore) {
             Button("Continue", action: askQuestion)
         } message: {
-            Text("Your score is???")
+            Text("Your score is: \(score)")
+        }
+        
+        .alert("Good Game", isPresented: $gameRestart) {
+            Button("Play again", action: reset)
+        } message: {
+            Text("You've reached the highest score of 8")
         }
     }
     
     func flagTapped(_ number: Int) {
         if number == correctAnswer {
             scoreTitle = "Correct"
+            score += 1
         } else {
-            scoreTitle = "Wrong"
+            scoreTitle = "Wrong, that's the flag of \(countries[number])"
+            score -= 1
         }
         
         showingScore = true
@@ -84,6 +101,13 @@ struct ContentView: View {
         countries.shuffle()
         correctAnswer = Int.random(in: 0...2)
     }
+    
+    func reset() {
+        countries.shuffle()
+        correctAnswer = Int.random(in: 0...2)
+        score = 0
+    }
+    
 }
 
 struct ContentView_Previews: PreviewProvider {
